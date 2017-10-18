@@ -84,6 +84,11 @@ package-archive-priorities '(("melpa-stable" . 1)))
 
 (global-set-key (kbd "C-x |") 'toggle-window-split)
 
+;; Auto save after time out
+(require 'real-auto-save)
+(add-hook 'prog-mode-hook 'real-auto-save-mode)
+(setq real-auto-save-interval 1) ;; in seconds
+
 ;; Save All on focus out
 (defun save-all ()
     (interactive)
@@ -195,7 +200,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
 ;;   :ensure t
 ;;   :init (global-flycheck-mode))
 
-(add-hook 'after-init-hook #'global-flycheck-mode)
+;; (add-hook 'after-init-hook #'global-flycheck-mode)
 (require 'flycheck)
 (setq flycheck-check-syntax-automatically '(mode-enabled save idle-change new-line)
       flycheck-idle-change-delay 0.8)
@@ -330,9 +335,27 @@ package-archive-priorities '(("melpa-stable" . 1)))
       (select-window (active-minibuffer-window))
     (error "Minibuffer is not active")))
 
+;; Undo tree
+(use-package undo-tree
+  :ensure t
+  :init
+  (global-undo-tree-mode))
 ;; Bind to C-c o
 (global-set-key "\C-co" 'switch-to-minibuffer)
+;; Code folding - Origami
+(require 'origami)
+(global-origami-mode)
 
+(add-hook 'origami-mode-hook
+          (lambda()
+             ;; (add-to-list 'origami-parser-alist '(typescript-mode . origami-c-style-parser))
+            (define-key origami-mode-map (kbd "C-c C-c f") 'origami-recursively-toggle-node)
+            (define-key origami-mode-map (kbd "C-c C-c a") 'origami-toggle-all-nodes)
+            (define-key origami-mode-map (kbd "C-c C-c s") 'origami-show-only-node)
+            (define-key origami-mode-map (kbd "C-c C-c o") 'origami-open-node)
+            (define-key origami-mode-map (kbd "C-c C-c p") 'origami-open-node-recursively)
+            (define-key origami-mode-map (kbd "C-c C-c k") 'origami-close-node-recursively)
+            (define-key origami-mode-map (kbd "C-c C-c c") 'origami-close-node)))
 
 ;; NVM
 ;; (require-package 'nvm)
@@ -365,7 +388,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
  '(mac-option-modifier (quote meta))
  '(package-selected-packages
    (quote
-    (ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
+    (real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
