@@ -84,11 +84,6 @@ package-archive-priorities '(("melpa-stable" . 1)))
 
 (global-set-key (kbd "C-x |") 'toggle-window-split)
 
-;; Auto save after time out
-(require 'real-auto-save)
-(add-hook 'prog-mode-hook 'real-auto-save-mode)
-(setq real-auto-save-interval 1) ;; in seconds
-
 ;; Save All on focus out
 (defun save-all ()
     (interactive)
@@ -190,7 +185,9 @@ package-archive-priorities '(("melpa-stable" . 1)))
 	    '(buffer-file-name "%f" (dired-directory dired-directory "%b"))))
 
 ;; Turn off auto-save
-(setq auto-save-default nil)
+(setq auto-save-default t)
+(setq auto-save-visited-file-name t)
+(setq auto-save-timeout 1)
 
 ;; Set backup directory
 (setq backup-directory-alist '(("" . "~/.emacs.d/emacs-backup")))
@@ -357,6 +354,46 @@ package-archive-priorities '(("melpa-stable" . 1)))
             (define-key origami-mode-map (kbd "C-c C-c k") 'origami-close-node-recursively)
             (define-key origami-mode-map (kbd "C-c C-c c") 'origami-close-node)))
 
+;; Treemacs
+(use-package treemacs
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (setq treemacs-follow-after-init          t
+          treemacs-width                      35
+          treemacs-indentation                2
+          treemacs-git-integration            t
+          treemacs-collapse-dirs              3
+          treemacs-silent-refresh             nil
+          treemacs-change-root-without-asking nil
+          treemacs-sorting                    'alphabetic-desc
+          treemacs-show-hidden-files          t
+          treemacs-never-persist              nil
+          treemacs-is-never-other-window      nil
+          treemacs-goto-tag-strategy          'refetch-index)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t))
+  :bind
+  (:map global-map
+        ([f8]         . treemacs-toggle)
+        ("M-0"        . treemacs-select-window)
+        ("C-c 1"      . treemacs-delete-other-windows)
+        ("M-t"        . nil)            ;Unset the key to use treemacs
+        ("M-t ft"     . treemacs-toggle)
+        ("M-t fT"     . treemacs)
+        ("M-t fB"     . treemacs-bookmark)
+        ("M-t f C-t"  . treemacs-find-file)
+        ("M-t f M-t" . treemacs-find-tag)))
+(use-package treemacs-projectile
+  :defer t
+  :ensure t
+  :config
+  (setq treemacs-header-function #'treemacs-projectile-create-header)
+  :bind (:map global-map
+              ("M-t fP" . treemacs-projectile)
+              ("M-t fp" . treemacs-projectile-toggle)))
 ;; NVM
 ;; (require-package 'nvm)
 
@@ -388,7 +425,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
  '(mac-option-modifier (quote meta))
  '(package-selected-packages
    (quote
-    (real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
+    (treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
