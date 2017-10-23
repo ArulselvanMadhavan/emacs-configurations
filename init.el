@@ -1,3 +1,4 @@
+
 ;; This buffer is for notes you don't want to save, and for Lisp evaluation.
 ;; If you want to create a file, visit that file with C-x C-f,
 ;; then enter the text in that file's own buffer.
@@ -96,7 +97,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
 
 ;;Load Theme
 (add-hook 'after-init-hook
-	  (lambda() (load-theme 'twilight-bright t)))
+	  (lambda() (load-theme 'twilight-anti-bright t)))
 ;; (setq doom-themes-enable-bold t
       ;; doom-themes-enable-italic t)
 
@@ -394,6 +395,34 @@ package-archive-priorities '(("melpa-stable" . 1)))
   :bind (:map global-map
               ("M-t fP" . treemacs-projectile)
               ("M-t fp" . treemacs-projectile-toggle)))
+
+;; Eshell extras
+(with-eval-after-load "esh-opt"
+  (autoload 'epe-theme-dakrone "eshell-prompt-extras")
+  (setq eshell-highlight-prompt nil
+        eshell-prompt-function 'epe-theme-dakrone))
+
+;; Beacon
+(beacon-mode 1)
+
+;; Custom Fonts
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8-unix)
+
+;; set a default font
+(when (member "Hack" (font-family-list))
+  (set-face-attribute 'default nil :font "Hack"))
+
+;; specify font for all unicode characters
+(when (member "Symbola" (font-family-list))
+  (set-fontset-font t 'unicode "Symbola" nil 'prepend))
+
+;; specify font for chinese characters using default chinese font on linux
+(when (member "WenQuanYi Micro Hei" (font-family-list))
+  (set-fontset-font t '(#x4e00 . #x9fff) "WenQuanYi Micro Hei" ))
+
+
+
 ;; NVM
 ;; (require-package 'nvm)
 
@@ -425,7 +454,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
  '(mac-option-modifier (quote meta))
  '(package-selected-packages
    (quote
-    (treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
+    (beacon eshell-prompt-extras treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
