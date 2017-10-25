@@ -19,7 +19,8 @@
       scroll-error-top-bottom t
       show-paren-delay 0.5
       use-package-always-ensure t
-      sentence-end-double-space nil)
+      sentence-end-double-space nil
+      ensime-startup-notification)
 
 ;; Buffer local variables
 (setq-default
@@ -137,7 +138,11 @@ package-archive-priorities '(("melpa-stable" . 1)))
 (helm-mode 1)
 
 ;; Helm Projectile
-(projectile-global-mode)
+(use-package projectile
+  :demand
+  :init (setq projectile-use-git-grep t)
+  :config (projectile-global-mode t))
+
 (setq projectile-completion-system 'helm)
 (helm-projectile-on)
 
@@ -185,10 +190,9 @@ package-archive-priorities '(("melpa-stable" . 1)))
       (list (format "%s %%S: %%j " (system-name))
 	    '(buffer-file-name "%f" (dired-directory dired-directory "%b"))))
 
-;; Turn off auto-save
+;; Turn off auto-save.
 (setq auto-save-default t)
 (setq auto-save-visited-file-name t)
-(setq auto-save-timeout 1)
 
 ;; Set backup directory
 (setq backup-directory-alist '(("" . "~/.emacs.d/emacs-backup")))
@@ -203,8 +207,21 @@ package-archive-priorities '(("melpa-stable" . 1)))
 (setq flycheck-check-syntax-automatically '(mode-enabled save idle-change new-line)
       flycheck-idle-change-delay 0.8)
 
-;; Tern
+;; Company - http://ensime.org/editors/emacs/hacks/#emacs-lisp
 (add-hook 'after-init-hook 'global-company-mode)
+(use-package company
+  :diminish company-mode
+  :commands company-mode
+  :init
+  (setq
+   company-dabbrev-ignore-case nil
+   company-dabbrev-code-ignore-case nil
+   company-dabbrev-downcase nil
+   company-idle-delay 0
+   company-minimum-prefix-length 4)
+  :config
+  (define-key company-active-map [tab] nil)
+  (define-key company-active-map (kbd "TAB") nil))
 
 ;; Sync environment variables between emacs and shell
 (when (memq window-system '(mac ns x))
@@ -321,10 +338,6 @@ package-archive-priorities '(("melpa-stable" . 1)))
                   (?r winner-redo)))
 	  )
 
-;; Auto pair for balancing parenthesis
-(require 'autopair)
-(autopair-global-mode)
-
 ;; Select mini buffer
 (defun switch-to-minibuffer ()
   "Switch to minibuffer window."
@@ -333,11 +346,14 @@ package-archive-priorities '(("melpa-stable" . 1)))
       (select-window (active-minibuffer-window))
     (error "Minibuffer is not active")))
 
-;; Undo tree
+;; Undo tree - http://ensime.org/editors/emacs/hacks/#emacs-lisp
 (use-package undo-tree
   :ensure t
   :init
-  (global-undo-tree-mode))
+  :diminish undo-tree-mode
+  :config (global-undo-tree-mode)
+  :bind ("C-/" . undo-tree-visualize))
+
 ;; Bind to C-c o
 (global-set-key "\C-co" 'switch-to-minibuffer)
 ;; Code folding - Origami
@@ -421,7 +437,171 @@ package-archive-priorities '(("melpa-stable" . 1)))
 (when (member "WenQuanYi Micro Hei" (font-family-list))
   (set-fontset-font t '(#x4e00 . #x9fff) "WenQuanYi Micro Hei" ))
 
+;; Highlight Symbol
+(use-package highlight-symbol
+  :diminish highlight-symbol-mode
+  :commands highlight-symbol
+  :bind ("s-h" . highlight-symbol))
 
+;; Goto Change
+(use-package goto-chg
+  :commands goto-last-change
+  ;; complementary to
+  ;; C-x r m / C-x r l
+  ;; and C-<space> C-<space> / C-u C-<space>
+  :bind (("C-." . goto-last-change)
+         ("C-," . goto-last-change-reverse)))
+
+;; Popup Summary
+(use-package popup-imenu
+  :commands popup-imenu
+  :bind ("M-i" . popup-imenu))
+
+;; Yasnippet
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :commands yas-minor-mode
+  :config (yas-reload-all))
+
+;; Smartparen
+(use-package smartparens
+  :ensure t
+  :diminish smartparens-mode
+  :commands
+  smartparens-strict-mode
+  smartparens-mode
+  sp-restrict-to-pairs-interactive
+  sp-local-pair
+  :init
+  (setq sp-interactive-dwim t)
+  :config
+  (require 'smartparens-config)
+  (sp-use-smartparens-bindings)
+
+  (sp-pair "(" ")" :wrap "C-(") ;; how do people live without this?
+  (sp-pair "[" "]" :wrap "s-[") ;; C-[ sends ESC
+  (sp-pair "{" "}" :wrap "C-{")
+
+  ;; WORKAROUND https://github.com/Fuco1/smartparens/issues/543
+  (bind-key "C-<left>" nil smartparens-mode-map)
+  (bind-key "C-<right>" nil smartparens-mode-map)
+
+  (bind-key "s-<delete>" 'sp-kill-sexp smartparens-mode-map)
+  (bind-key "s-<backspace>" 'sp-backward-kill-sexp smartparens-mode-map))
+
+;; Contextual Backspace
+(defun contextual-backspace ()
+  "Hungry whitespace or delete word depending on context."
+  (interactive)
+  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
+      (while (looking-back "[[:space:]\n]" (- (point) 1))
+        (delete-char -1))
+    (cond
+     ((and (boundp 'smartparens-strict-mode)
+           smartparens-strict-mode)
+      (sp-backward-kill-word 1))
+     ((and (boundp 'subword-mode) 
+           subword-mode)
+      (subword-backward-kill 1))
+     (t
+      (backward-kill-word 1)))))
+
+(global-set-key (kbd "C-<backspace>") 'contextual-backspace)
+
+;; Etags
+(use-package etags-select
+  :ensure t
+  :commands etags-select-find-tag)
+
+;; Ensime edit definition
+(defun ensime-edit-definition-with-fallback ()
+  "Variant of `ensime-edit-definition' with ctags if ENSIME is not available."
+  (interactive)
+  (unless (and (ensime-connection-or-nil)
+               (ensime-edit-definition))
+    (projectile-find-tag)))
+
+(bind-key "M-." 'ensime-edit-definition-with-fallback ensime-mode-map)
+
+(global-set-key (kbd "M-.") 'projectile-find-tag)
+(global-set-key (kbd "M-,") 'pop-tag-mark)
+
+;; Scala Mode newline comments
+(defun scala-mode-newline-comments ()
+  "Custom newline appropriate for `scala-mode'."
+  ;; shouldn't this be in a post-insert hook?
+  (interactive)
+  (newline-and-indent)
+  (scala-indent:insert-asterisk-on-multiline-comment))
+
+(bind-key "RET" 'scala-mode-newline-comments scala-mode-map)
+
+(bind-key "C-<tab>" 'dabbrev-expand scala-mode-map)
+
+(sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
+(sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
+
+(defun sp-restrict-c (sym)
+  "Smartparens restriction on `SYM' for C-derived parenthesis."
+  (sp-restrict-to-pairs-interactive "{([" sym))
+
+(bind-key "s-<delete>" (sp-restrict-c 'sp-kill-sexp) scala-mode-map)
+(bind-key "s-<backspace>" (sp-restrict-c 'sp-backward-kill-sexp) scala-mode-map)
+(bind-key "s-<home>" (sp-restrict-c 'sp-beginning-of-sexp) scala-mode-map)
+(bind-key "s-<end>" (sp-restrict-c 'sp-end-of-sexp) scala-mode-map)
+(bind-key "s-{" 'sp-rewrap-sexp smartparens-mode-map)
+
+(use-package expand-region
+  :ensure t
+  :commands 'er/expand-region
+  :bind ("C-=" . er/expand-region))
+(require 'ensime-expand-region)
+
+;; Scala Mode hook
+(add-hook 'scala-mode-hook
+          (lambda ()
+            (show-paren-mode)
+            (smartparens-mode)
+            (yas-minor-mode)
+            (git-gutter-mode)
+            (company-mode)
+            (ensime-mode)
+            (scala-mode:goto-start-of-code)))
+
+;; Elisp Mode hacks from ensime
+
+(bind-key "RET" 'comment-indent-new-line emacs-lisp-mode-map)
+
+;; Eldoc
+(use-package eldoc
+  :ensure t
+  :diminish eldoc-mode
+  :commands eldoc-mode)
+
+;; Regex packages for elisp
+(use-package re-builder
+  :ensure nil
+  ;; C-c C-u errors, C-c C-w copy, C-c C-q exit
+  :init (bind-key "C-c r" 're-builder emacs-lisp-mode-map))
+
+(use-package pcre2el
+  :commands rxt-toggle-elisp-rx
+  :init (bind-key "C-c / t" 'rxt-toggle-elisp-rx emacs-lisp-mode-map))
+
+(use-package flycheck-cask
+  :commands flycheck-cask-setup
+  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (setq show-trailing-whitespace t)
+            (show-paren-mode)
+            (prettify-symbols-mode)
+            (eldoc-mode)
+            (flycheck-mode)
+            (yas-minor-mode)
+            (company-mode)
+            (smartparens-strict-mode)))
 
 ;; NVM
 ;; (require-package 'nvm)
@@ -454,7 +634,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
  '(mac-option-modifier (quote meta))
  '(package-selected-packages
    (quote
-    (beacon eshell-prompt-extras treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
+    (smartparens highlight-symbol beacon eshell-prompt-extras treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
