@@ -20,7 +20,7 @@
       show-paren-delay 0.5
       use-package-always-ensure t
       sentence-end-double-space nil
-      ensime-startup-notification)
+      ensime-startup-notification nil)
 
 ;; Buffer local variables
 (setq-default
@@ -557,13 +557,19 @@ package-archive-priorities '(("melpa-stable" . 1)))
   :bind ("C-=" . er/expand-region))
 (require 'ensime-expand-region)
 
+(defun ensime-sbt-do-fmt ()
+  "WORKAROUND"
+  (interactive)
+  (sbt:command "scalafmt"))
+
+(bind-key "C-c C-v F" 'ensime-sbt-do-fmt scala-mode-map)
+
 ;; Scala Mode hook
 (add-hook 'scala-mode-hook
           (lambda ()
             (show-paren-mode)
             (smartparens-mode)
             (yas-minor-mode)
-            (git-gutter-mode)
             (company-mode)
             (ensime-mode)
             (scala-mode:goto-start-of-code)))
