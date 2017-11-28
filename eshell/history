@@ -1,0 +1,128 @@
+ls -lrt
+gst
+cd ~/dev/haskell-projects/haskell-first-principles/chapter13/
+ls -lrt
+λ cd ../../hangman/
+cd ../../hangman
+ls -lrt
+ls -lrt
+stack ghci
+git config user.email "arulselvan1234@gmail.com"
+git status
+git remote -v
+git remote add origin https://github.com/Arulselvanmadhavan/hangman.git
+git remote -v
+git config user.email "arulselvan1234@gmail.com"
+git log
+cd ../haskell-first-principles/chapter13
+stack ghci
+cd ~/dev/haskell-projects/haskell-first-principles/chapter13/
+pwd
+cabal-install split
+cabal help
+cabal install split
+stack ghci
+git status
+stack new chapter14
+cd chapter14/
+ls -lrt
+stack build
+stack ghci
+stack build
+stack ghci
+ls -lrt
+cd ../../
+ls -lrt
+stack new morse
+cd morse/
+git init
+git status
+stack build
+cd ../../haskell-projects/morse/
+ls -lrt
+stack ghci morse:tests
+stack ghci morse:specs
+stack ghci morse:Specs
+stack ghci morse:morse-test
+stack ghci morse:morse-test
+stack ghci morse:morse-test
+stack ghci morse:morse-test
+stack exec morse-test
+stack build
+stack exec morse-test
+cd .stack-work/dist/
+ls -lrt
+cd x86_64-osx/
+ls -lrt
+cd Cabal-1.24.2.0/
+ls -lrt
+cd build/
+ls -lrt
+cd ../../../../../
+stack test
+stack ghci
+stack ghci morse:morse-test
+stack ghci morse-test
+stack ghci tests
+stack ghci morse:tests
+stack ghci morse:morse-test
+stack ghci morse:morse-test -v
+stack build
+stack ghci morse:morse-test
+stack build
+stack ghci morse:morse-test
+stack build
+stack ghci morse:morse-test
+git remote add origin https://github.com/Arulselvanmadhavan/morse.git
+git remote -v
+git config user.email "arulselvan1234@gmail.com"
+stack ghci
+cd ../haskell-first-principles/
+stack new orphan-instances
+mkdir orphan-instance
+cd orphan-instance/
+ls -lrt
+ghc -I. --make ListyInstances.hs
+ls -lrt
+cd ~/dev/haskell-projects/haskell-first-principles/.git/
+cd ..
+ls -lrt
+stack new chapter15
+cd chapter14/
+ls -lrt
+cat chapter14.cabal 
+cd ../chapter15/
+ls -lrt
+stack build
+stack ghci
+stack ghci chapter15:chapter15-test
+stack install
+stack build
+stack setup
+cabal install
+cabal update
+stack ghci chapter15:chapter15-test
+cabal install QuickCheck
+stack ghci chapter15:chapter15-test
+stack build
+stack install
+stack build
+stack install QuickCheck
+stack ghci chapter15:chapter15-test
+stack build
+stack --version
+stack ghci chapter15:chapter15-test
+cd ~/dev/haskell-projects/haskell-first-principles/
+cd chapter15/
+ls -lrt
+stack ghci chapter15:chapter15-test
+git config user.email "arulselvan1234@gmail.com"
+stack ghci chapter15:chapter15-test
+stack ghci chapter15:chapter15-test
+stack build
+stack ghci chapter15:chapter15-test
+stack ghci chapter15:chapter15-test
+cd ..
+stack new chapter16
+cd chapter16/
+ls -lrt
