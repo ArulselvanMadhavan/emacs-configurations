@@ -215,6 +215,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
   :commands company-mode
   :init
   (setq
+   company-tooltip-align-annotations t
    company-dabbrev-ignore-case nil
    company-dabbrev-code-ignore-case nil
    company-dabbrev-downcase nil
@@ -619,6 +620,57 @@ package-archive-priorities '(("melpa-stable" . 1)))
 (setenv "PATH" (concat (getenv "PATH") ":" (getenv "HOME") "/.cabal/bin" ":" (getenv "HOME") "/.local/bin"))
 (setq exec-path (append exec-path (list (concat (getenv "HOME") "/.cabal/bin") (concat (getenv "HOME") "/.local/bin"))))
 
+;; Rust Setup
+(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
+(use-package cargo
+  :init
+  (add-hook 'rust-mode-hook 'cargo-minor-mode)
+  (add-hook 'toml-mode-hook 'cargo-minor-mode))
+
+(use-package racer
+  :init
+  (add-hook 'rust-mode-hook #'racer-mode)
+  (add-hook 'racer-mode-hook #'eldoc-mode)
+  (add-hook 'racer-mode-hook #'company-mode)
+  :config
+  (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+  (setq racer-cmd "~/.cargo/bin/racer")
+  (setq racer-rust-src-path "~/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src/"))
+
+;; FlyCheck for rust
+(use-package flycheck-rust
+  :ensure t
+  :init
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+(require 'rust-mode)
+(add-hook 'rust-mode-hook (lambda()
+                            (racer-mode)
+                            (flycheck-rust-setup)
+                            (flycheck-mode +1)
+                            (setq flycheck-check-syntax-automatically '(mode-enabled save new-line idle-change) flycheck-idle-change-delay 0.8)
+                            (local-set-key (kbd "C-c C-v F") #'rust-format-buffer)
+                            (setq rust-format-on-save t)))
+
+;; Idris
+(use-package idris-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.idr\\'" . idris-mode))
+  (defun my-idris-mode-hook ()
+  (add-to-list 'display-buffer-alist
+               '(".*". (display-buffer-reuse-window . ((reusable-frames . t)))))
+  (setq idris-stay-in-current-window-on-compiler-error t)
+  (setq idris-prover-restore-window-configuration t)
+
+  (add-to-list 'frames-only-mode-kill-frame-when-buffer-killed-buffer-list "*idris-repl*")
+  (add-to-list 'frames-only-mode-kill-frame-when-buffer-killed-buffer-list "*idris-notes*")
+  (add-to-list 'frames-only-mode-kill-frame-when-buffer-killed-buffer-list "*idris-info*")
+  (add-to-list 'frames-only-mode-kill-frame-when-buffer-killed-buffer-list "*idris-holes*"))
+
+(add-hook 'idris-mode-hook #'my-idris-mode-hook))
+
+;; (add-hook 'rust-mode-hook #'my-rust-mode-hook)
 ;; (require-package 'nvm)
 
 ;; (defun do-nvm-use (version)
@@ -649,7 +701,7 @@ package-archive-priorities '(("melpa-stable" . 1)))
  '(mac-option-modifier (quote meta))
  '(package-selected-packages
    (quote
-    (smartparens highlight-symbol beacon eshell-prompt-extras treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
+    (company-racer flycheck-rust racer cargo rust-mode smartparens highlight-symbol beacon eshell-prompt-extras treemacs-evil treemacs-projectile real-auto-save origami undo-tree treemacs ensime web-mode json-mode nvm hindent autopair intero darktooth-theme pdf-tools haskell-mode tide magit tern-auto-complete prettier-js company-tern flycheck twilight-bright-theme twilight-anti-bright-theme twilight-theme rjsx-mode helm-projectile monokai-theme moe-theme grandshell-theme ample-theme solarized-theme zenburn-theme xref-js2 which-key use-package try org-bullets js2-refactor helm doom-themes cyberpunk-theme counsel color-theme-sanityinc-tomorrow color-theme auto-complete ace-window))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
